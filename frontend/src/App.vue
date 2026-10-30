@@ -97,7 +97,7 @@ async function onExpired() {
   hold.value = null;
   selected.value = [];
   await refreshSeats();
-  notice.value = "Your 15 minutes are up and the seats went back on sale.";
+  notice.value = "Your hold expired and the seats went back on sale.";
 }
 
 function pay() {
