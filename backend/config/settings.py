@@ -78,3 +78,5 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
 }
+
+SEAT_HOLD_TTL_SECONDS = int(os.environ.get("SEAT_HOLD_TTL_SECONDS", 15 * 60))

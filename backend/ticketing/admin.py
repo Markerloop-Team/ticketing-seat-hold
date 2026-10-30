@@ -30,3 +30,10 @@ class EventSeatAdmin(admin.ModelAdmin):
     list_display = ["event", "seat", "price_group", "status"]
     list_filter = ["event", "status"]
     list_select_related = ["event", "seat__section", "price_group"]
+
+
+@admin.register(models.Hold)
+class HoldAdmin(admin.ModelAdmin):
+    list_display = ["token", "event", "status", "created_at", "expires_at"]
+    list_filter = ["status"]
+    readonly_fields = ["token", "created_at"]
