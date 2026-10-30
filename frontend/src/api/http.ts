@@ -19,6 +19,7 @@ export function createHttpApi(baseUrl: string): TicketingApi {
   });
 
   return {
+    isMock: false,
     getEvent: (slug) => request(`/events/${slug}/`),
     getSeats: (slug, sectionId) => request(`/events/${slug}/sections/${sectionId}/seats/`),
     createHold: (slug, seatIds) => request(`/events/${slug}/holds/`, post({ seat_ids: seatIds })),

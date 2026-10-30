@@ -81,6 +81,8 @@ export interface GateCredentials {
 }
 
 export interface TicketingApi {
+  /** True for the in-browser mock; the UI skips the gate login then. */
+  readonly isMock: boolean;
   getEvent(slug: string): Promise<EventInfo>;
   getSeats(slug: string, sectionId: number): Promise<SectionSeats>;
   createHold(slug: string, seatIds: number[]): Promise<Hold>;
