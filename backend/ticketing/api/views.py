@@ -1,4 +1,5 @@
 from django.db.models import Count
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
@@ -6,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ticketing.models import Event, EventSeat, Hold, Order, Section
-from ticketing.services import holds, orders
+from ticketing.services import holds, orders, tickets
 
 from . import serializers as s
 
@@ -96,3 +97,11 @@ class OrderDetail(APIView):
     def get(self, request, token):
         order = get_object_or_404(_order_queryset(), token=token)
         return Response(s.OrderSerializer(order).data)
+
+
+class TicketQr(APIView):
+    def get(self, request, code):
+        tickets.parse_ticket_code(code)
+        resp = HttpResponse(tickets.qr_svg(code), content_type="image/svg+xml")
+        resp["Cache-Control"] = "private, max-age=86400"
+        return resp

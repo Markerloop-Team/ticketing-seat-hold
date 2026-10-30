@@ -2,6 +2,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from ticketing.models import Event, EventSeat, Hold, Order, PriceGroup, Section, Ticket
+from ticketing.services.tickets import ticket_code
 
 
 class SectionSerializer(serializers.ModelSerializer):
@@ -92,13 +93,17 @@ class ConfirmPaymentSerializer(serializers.Serializer):
 
 
 class TicketSerializer(serializers.ModelSerializer):
+    code = serializers.SerializerMethodField()
     section = serializers.CharField(source="event_seat.seat.section.name")
     row = serializers.IntegerField(source="event_seat.seat.row")
     number = serializers.IntegerField(source="event_seat.seat.number")
 
     class Meta:
         model = Ticket
-        fields = ["section", "row", "number", "price"]
+        fields = ["code", "section", "row", "number", "price"]
+
+    def get_code(self, ticket):
+        return ticket_code(ticket)
 
 
 class OrderSerializer(serializers.ModelSerializer):

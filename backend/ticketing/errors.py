@@ -27,3 +27,7 @@ class HoldNotActive(DomainError):
 class PaymentReferenceConflict(DomainError):
     code = "payment_reference_conflict"
     status = 409
+
+
+class InvalidTicketCode(DomainError):
+    code = "invalid_ticket_code"
