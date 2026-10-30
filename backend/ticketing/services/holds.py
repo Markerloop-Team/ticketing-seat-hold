@@ -69,3 +69,22 @@ def _free_seats(hold_ids: list[int]) -> int:
     return EventSeat.objects.filter(hold_id__in=hold_ids, status=EventSeat.Status.HELD).update(
         status=EventSeat.Status.FREE, hold=None, held_until=None
     )
+
+
+def expire_holds(*, now: datetime | None = None, batch_size: int = 500) -> int:
+    """Return seats of lapsed holds to sale. Safe to run concurrently with itself."""
+    now = now or timezone.now()
+    with transaction.atomic():
+        # skip_locked: a hold being confirmed right now is left alone, and two
+        # workers never fight over the same batch.
+        ids = list(
+            Hold.objects.select_for_update(skip_locked=True)
+            .filter(status=Hold.Status.ACTIVE, expires_at__lte=now)
+            .order_by("expires_at")
+            .values_list("pk", flat=True)[:batch_size]
+        )
+        if not ids:
+            return 0
+        _free_seats(ids)
+        Hold.objects.filter(pk__in=ids).update(status=Hold.Status.EXPIRED)
+    return len(ids)

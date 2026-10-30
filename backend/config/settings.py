@@ -81,3 +81,12 @@ REST_FRAMEWORK = {
 }
 
 SEAT_HOLD_TTL_SECONDS = int(os.environ.get("SEAT_HOLD_TTL_SECONDS", 15 * 60))
+
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_TASK_ALWAYS_EAGER = env_bool("CELERY_TASK_ALWAYS_EAGER", False)
+CELERY_BEAT_SCHEDULE = {
+    "release-expired-holds": {
+        "task": "ticketing.tasks.release_expired_holds",
+        "schedule": 30.0,
+    },
+}
