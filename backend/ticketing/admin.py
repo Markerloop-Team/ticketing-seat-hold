@@ -37,3 +37,16 @@ class HoldAdmin(admin.ModelAdmin):
     list_display = ["token", "event", "status", "created_at", "expires_at"]
     list_filter = ["status"]
     readonly_fields = ["token", "created_at"]
+
+
+class TicketInline(admin.TabularInline):
+    model = models.Ticket
+    extra = 0
+    readonly_fields = ["public_id", "event_seat", "price"]
+
+
+@admin.register(models.Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ["token", "event", "email", "amount", "paid_at"]
+    search_fields = ["email", "payment_reference"]
+    inlines = [TicketInline]

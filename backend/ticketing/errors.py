@@ -22,3 +22,8 @@ class SeatsUnavailable(DomainError):
 class HoldNotActive(DomainError):
     code = "hold_not_active"
     status = 409
+
+
+class PaymentReferenceConflict(DomainError):
+    code = "payment_reference_conflict"
+    status = 409

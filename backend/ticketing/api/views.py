@@ -5,8 +5,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ticketing.models import Event, EventSeat, Hold, Section
-from ticketing.services import holds
+from ticketing.models import Event, EventSeat, Hold, Order, Section
+from ticketing.services import holds, orders
 
 from . import serializers as s
 
@@ -71,3 +71,28 @@ class HoldDetail(APIView):
         hold = get_object_or_404(Hold, token=token)
         holds.release_hold(hold)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+def _order_queryset():
+    return Order.objects.select_related("event").prefetch_related(
+        "tickets__event_seat__seat__section"
+    )
+
+
+class HoldConfirm(APIView):
+    """Payment provider callback. In production this sits behind the provider's
+    signature check; here it takes the reference as-is."""
+
+    def post(self, request, token):
+        hold = get_object_or_404(Hold, token=token)
+        payload = s.ConfirmPaymentSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        order = orders.confirm_payment(hold, **payload.validated_data)
+        order = _order_queryset().get(pk=order.pk)
+        return Response(s.OrderSerializer(order).data, status=status.HTTP_201_CREATED)
+
+
+class OrderDetail(APIView):
+    def get(self, request, token):
+        order = get_object_or_404(_order_queryset(), token=token)
+        return Response(s.OrderSerializer(order).data)

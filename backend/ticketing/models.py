@@ -119,3 +119,28 @@ class Hold(models.Model):
 
     def __str__(self) -> str:
         return f"Hold {self.token} [{self.status}]"
+
+
+class Order(models.Model):
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    hold = models.OneToOneField(Hold, on_delete=models.PROTECT, related_name="order")
+    event = models.ForeignKey(Event, on_delete=models.PROTECT, related_name="orders")
+    email = models.EmailField()
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    # Provider-side id; unique so a replayed callback can't create a second order.
+    payment_reference = models.CharField(max_length=100, unique=True)
+    paid_at = models.DateTimeField()
+
+    def __str__(self) -> str:
+        return f"Order {self.token}"
+
+
+class Ticket(models.Model):
+    public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
+    # One-to-one: the database itself refuses to sell a seat twice.
+    event_seat = models.OneToOneField(EventSeat, on_delete=models.PROTECT, related_name="ticket")
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self) -> str:
+        return f"Ticket {self.public_id}"

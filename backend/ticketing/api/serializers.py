@@ -1,7 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from ticketing.models import Event, EventSeat, Hold, PriceGroup, Section
+from ticketing.models import Event, EventSeat, Hold, Order, PriceGroup, Section, Ticket
 
 
 class SectionSerializer(serializers.ModelSerializer):
@@ -84,3 +84,27 @@ class HoldSerializer(serializers.ModelSerializer):
         if hold.status != Hold.Status.ACTIVE:
             return 0
         return max(0, int((hold.expires_at - timezone.now()).total_seconds()))
+
+
+class ConfirmPaymentSerializer(serializers.Serializer):
+    payment_reference = serializers.CharField(max_length=100)
+    email = serializers.EmailField()
+
+
+class TicketSerializer(serializers.ModelSerializer):
+    section = serializers.CharField(source="event_seat.seat.section.name")
+    row = serializers.IntegerField(source="event_seat.seat.row")
+    number = serializers.IntegerField(source="event_seat.seat.number")
+
+    class Meta:
+        model = Ticket
+        fields = ["section", "row", "number", "price"]
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    event = serializers.CharField(source="event.title")
+    tickets = TicketSerializer(many=True)
+
+    class Meta:
+        model = Order
+        fields = ["token", "event", "email", "amount", "paid_at", "tickets"]
