@@ -10,4 +10,5 @@ urlpatterns = [
     path("holds/<uuid:token>/confirm/", views.HoldConfirm.as_view()),
     path("orders/<uuid:token>/", views.OrderDetail.as_view()),
     path("tickets/<str:code>/qr.svg", views.TicketQr.as_view()),
+    path("validator/redeem/", views.Redeem.as_view()),
 ]

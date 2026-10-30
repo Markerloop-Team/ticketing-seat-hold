@@ -1,5 +1,6 @@
 import uuid
 
+from django.conf import settings
 from django.db import models
 
 
@@ -141,6 +142,13 @@ class Ticket(models.Model):
     # One-to-one: the database itself refuses to sell a seat twice.
     event_seat = models.OneToOneField(EventSeat, on_delete=models.PROTECT, related_name="ticket")
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    redeemed_at = models.DateTimeField(null=True, blank=True)
+    redeemed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+
+    class Meta:
+        permissions = [("redeem_ticket", "Can redeem tickets at the entrance")]
 
     def __str__(self) -> str:
         return f"Ticket {self.public_id}"

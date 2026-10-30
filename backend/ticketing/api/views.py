@@ -2,7 +2,7 @@ from django.db.models import Count
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework import status
+from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -105,3 +105,22 @@ class TicketQr(APIView):
         resp = HttpResponse(tickets.qr_svg(code), content_type="image/svg+xml")
         resp["Cache-Control"] = "private, max-age=86400"
         return resp
+
+
+class CanRedeem(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.has_perm("ticketing.redeem_ticket")
+
+
+class Redeem(APIView):
+    permission_classes = [permissions.IsAuthenticated, CanRedeem]
+
+    def post(self, request):
+        payload = s.RedeemSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        ticket = tickets.redeem(
+            payload.validated_data["code"],
+            event_id=payload.validated_data["event_id"],
+            by=request.user,
+        )
+        return Response(s.RedeemedTicketSerializer(ticket).data)

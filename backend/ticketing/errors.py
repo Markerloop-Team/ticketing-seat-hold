@@ -31,3 +31,18 @@ class PaymentReferenceConflict(DomainError):
 
 class InvalidTicketCode(DomainError):
     code = "invalid_ticket_code"
+
+
+class TicketNotFound(DomainError):
+    code = "ticket_not_found"
+    status = 404
+
+
+class WrongEvent(DomainError):
+    code = "wrong_event"
+    status = 409
+
+
+class AlreadyRedeemed(DomainError):
+    code = "already_redeemed"
+    status = 409

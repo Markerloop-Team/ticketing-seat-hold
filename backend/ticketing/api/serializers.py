@@ -113,3 +113,13 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ["token", "event", "email", "amount", "paid_at", "tickets"]
+
+
+class RedeemSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=200)
+    event_id = serializers.IntegerField()
+
+
+class RedeemedTicketSerializer(TicketSerializer):
+    class Meta(TicketSerializer.Meta):
+        fields = ["section", "row", "number", "redeemed_at"]
