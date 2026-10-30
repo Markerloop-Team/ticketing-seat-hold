@@ -33,6 +33,7 @@ describe("SeatMap", () => {
     expect(seat(w, 12).attributes("data-state")).toBe("held");
     expect(seat(w, 13).attributes("data-state")).toBe("sold");
     expect(seat(w, 21).attributes("data-state")).toBe("selected");
+    expect(seat(w, 21).attributes("style") ?? "").not.toContain("fill");
     expect(seat(w, 11).attributes("aria-label")).toBe("Row 1, seat 1, VIP 15,000 ₸");
   });
 

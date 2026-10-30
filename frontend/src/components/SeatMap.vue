@@ -48,7 +48,7 @@ function state(seat: Seat): "selected" | "free" | "held" | "sold" {
 }
 
 function fill(seat: Seat): string | undefined {
-  return seat.status === "free" ? groups.value.get(seat.price_group)?.color : undefined;
+  return state(seat) === "free" ? groups.value.get(seat.price_group)?.color : undefined;
 }
 
 function label(seat: Seat): string {
@@ -154,13 +154,18 @@ function toggle(seat: Seat) {
   transform-box: fill-box;
   transform-origin: center;
 }
+.seat:focus {
+  outline: none;
+}
 .seat.free {
   cursor: pointer;
 }
 .seat.free:hover,
 .seat.free:focus-visible {
   transform: scale(1.2);
-  outline: none;
+}
+.seat:focus-visible {
+  stroke: var(--accent);
 }
 .seat.held,
 .seat.sold {
