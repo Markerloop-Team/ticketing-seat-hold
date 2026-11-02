@@ -14,24 +14,43 @@ import {
  * takeover, idempotent confirm, single redemption) but keeps state in memory.
  */
 
-const HALL_SVG = `<svg viewBox="0 0 600 420" xmlns="http://www.w3.org/2000/svg">
-  <rect x="180" y="20" width="240" height="40" rx="6" class="stage"/>
-  <path id="stalls" d="M150 100 H450 L480 260 H120 Z"/>
-  <path id="balcony-left" d="M40 120 L110 110 L100 330 L30 320 Z"/>
-  <path id="balcony-right" d="M490 110 L560 120 L570 320 L500 330 Z"/>
+const HALL_SVG = `<svg viewBox="0 0 600 330" xmlns="http://www.w3.org/2000/svg">
+  <rect x="170" y="18" width="260" height="34" rx="6" class="stage"/>
+  <path id="stalls" d="M239.8 76.9 A90 90 0 0 0 360.2 76.9 L494 225.5 A290 290 0 0 1 106 225.5 Z"/>
+  <path id="balcony-left" d="M151.4 143.8 A200 200 0 0 1 106.8 61.8 L39.2 79.9 A270 270 0 0 0 99.4 190.6 Z"/>
+  <path id="balcony-right" d="M448.6 143.8 A200 200 0 0 0 493.2 61.8 L560.8 79.9 A270 270 0 0 1 500.6 190.6 Z"/>
 </svg>`;
 
 const SECTIONS = [
-  { id: 1, name: "Stalls", svg_element_id: "stalls", rows: 8, perRow: 14 },
+  { id: 1, name: "Parterre", svg_element_id: "stalls", rows: 8, perRow: 14 },
   { id: 2, name: "Balcony Left", svg_element_id: "balcony-left", rows: 6, perRow: 4 },
   { id: 3, name: "Balcony Right", svg_element_id: "balcony-right", rows: 6, perRow: 4 },
 ];
 
 const PRICE_GROUPS: PriceGroup[] = [
-  { id: 1, name: "VIP", color: "#d4543a", price: "15000.00" },
-  { id: 2, name: "Stalls", color: "#3a7bd4", price: "9000.00" },
-  { id: 3, name: "Balcony", color: "#3aa57a", price: "5000.00" },
+  { id: 1, name: "Premier", color: "#e3b25a", price: "15000.00" },
+  { id: 2, name: "Parterre", color: "#d0607a", price: "9000.00" },
+  { id: 3, name: "Balcony", color: "#7d9ad0", price: "5000.00" },
+  { id: 4, name: "Amphitheatre", color: "#9b7fd1", price: "7000.00" },
 ];
+
+/**
+ * Seat coordinates as a venue admin would draw them: rows are arcs facing the
+ * stage, with a centre aisle in the parterre.
+ */
+function seatPosition(sectionId: number, row: number, number: number, perRow: number) {
+  const centre = (perRow + 1) / 2;
+  const spacing = 26;
+  const aisle = sectionId === 1 ? 10 : 0;
+  const radius = (sectionId === 1 ? 700 : 520) + (row - 1) * 30;
+  const along = (number - centre) * spacing + (number > centre ? aisle : -aisle);
+  const angle = along / radius;
+  const r1 = (v: number) => Math.round(v * 10) / 10;
+  return {
+    x: r1(220 + radius * Math.sin(angle)),
+    y: r1(40 + radius * Math.cos(angle) - (radius - (row - 1) * 30)),
+  };
+}
 
 interface SeatRow {
   seat: Omit<Seat, "status">;
@@ -60,6 +79,13 @@ export interface MockOptions {
   now?: () => number;
 }
 
+/** A curtain-up time two weeks out, at 19:00 local time. */
+function eveningIn(days: number, from: number): string {
+  const d = new Date(from + days * 86_400_000);
+  d.setHours(19, 0, 0, 0);
+  return d.toISOString();
+}
+
 export function createMockApi(options: MockOptions = {}): TicketingApi {
   const ttl = (options.holdTtlSeconds ?? 15 * 60) * 1000;
   const latency = options.latencyMs ?? 0;
@@ -69,9 +95,9 @@ export function createMockApi(options: MockOptions = {}): TicketingApi {
     id: 1,
     slug: "swan-lake",
     title: "Swan Lake",
-    starts_at: new Date(now() + 14 * 86_400_000).toISOString(),
+    starts_at: eveningIn(14, now()),
     max_seats_per_hold: 5,
-    venue: "Grand Hall",
+    venue: "Grand Hall, Meridian Opera House",
     svg: HALL_SVG,
   };
 
@@ -85,11 +111,11 @@ export function createMockApi(options: MockOptions = {}): TicketingApi {
     for (let row = 1; row <= section.rows; row++) {
       for (let number = 1; number <= section.perRow; number++) {
         const id = nextSeatId++;
-        const group = section.id !== 1 ? 3 : row <= 2 ? 1 : 2;
+        const group = section.id !== 1 ? 3 : row <= 2 ? 1 : row <= 5 ? 2 : 4;
         // Deterministic "already sold" scatter so the map doesn't look empty.
         const sold = (id * 7919) % 11 === 0;
         seats.set(id, {
-          seat: { id, row, number, x: number * 24, y: row * 28, price_group: group },
+          seat: { id, row, number, ...seatPosition(section.id, row, number, section.perRow), price_group: group },
           sectionId: section.id,
           status: sold ? "sold" : "free",
           holdToken: null,
