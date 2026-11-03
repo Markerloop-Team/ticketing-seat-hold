@@ -4,7 +4,7 @@
 
 One slice of a ticketing platform: **seat map → 15-minute hold → payment confirmation → QR ticket → entry validation**.
 
-It is taken from [vteatre.kz](https://vteatre.kz), a theatre-ticketing platform Markerloop built and ran in production. The original system is larger (catalogue, fan zones, offline sales, wallet and cashback, organiser tools). This repository rebuilds only the part where tickets can be double-sold or double-used, with a Django backend and a Vue 3 seat map.
+It is taken from vteatre.kz, a theatre-ticketing platform Markerloop built and ran in production (the site is no longer online; its front-end runs as a demo at <https://showroom.markerloop.com/vteatre/>). The original system is larger (catalogue, fan zones, offline sales, wallet and cashback, organiser tools). This repository rebuilds only the part where tickets can be double-sold or double-used, with a Django backend and a Vue 3 seat map.
 
 **Live demo:** <https://showroom.markerloop.com/ticketing-seat-hold/>. The demo is the frontend running on its own with a mocked API (see [Frontend](#frontend)). Add `?hold_ttl=30` to the URL to watch a hold expire in 30 seconds.
 
