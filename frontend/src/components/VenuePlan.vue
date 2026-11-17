@@ -26,7 +26,7 @@ const shapes = computed(() => {
 });
 
 function shortName(name: string) {
-  return name.replace(/^Balcony /, "").replace(/ Balcony$/, "");
+  return name.replace(/^(Balcony|Gallery) /, "").replace(/ (Balcony|Stalls)$/, "");
 }
 
 function pick(section: SectionSummary | undefined) {

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { ApiError } from "../types";
-import { createMockApi } from "../mock";
+import { productions } from "../../content/programme";
+import { createMockApi, PRICES } from "../mock";
 
 function setup() {
   let t = Date.parse("2026-01-01T19:00:00Z");
@@ -67,5 +68,31 @@ describe("mock api", () => {
     const late = await rejection(api.confirmPayment(hold.token, { payment_reference: "x", email: "" }));
     expect(late.code).toBe("hold_not_active");
     await api.createHold("swan-lake", ids);
+  });
+
+  it("keeps every production of the season bookable on its own seats", async () => {
+    const { api } = setup();
+    for (const p of productions) {
+      const event = await api.getEvent(p.slug);
+      expect(event.title).toBe(p.title);
+      // The listing's "from" price is the cheapest tier the box office set.
+      expect(Math.min(...PRICES[p.slug])).toBe(p.fromPrice);
+    }
+    const swan = await freeSeats(api, 1);
+    const err = await rejection(api.createHold("carmen", swan));
+    expect(err.code).toBe("seats_unavailable");
+  });
+
+  it("turns a ticket away at another show's gate", async () => {
+    const { api } = setup();
+    const ids = await freeSeats(api, 1);
+    const hold = await api.createHold("swan-lake", ids);
+    const order = await api.confirmPayment(hold.token, { payment_reference: "demo-2", email: "" });
+    const carmen = await api.getEvent("carmen");
+
+    const err = await rejection(api.redeem(order.tickets[0].code, carmen.id));
+
+    expect(err.code).toBe("wrong_event");
+    await api.redeem(order.tickets[0].code, 1);
   });
 });
