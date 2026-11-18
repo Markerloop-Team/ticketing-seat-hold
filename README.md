@@ -6,7 +6,7 @@ One slice of a ticketing platform: **seat map → 15-minute hold → payment con
 
 It is taken from vteatre.kz, a theatre-ticketing platform Markerloop built and ran in production (the site is no longer online; its front-end runs as a demo at <https://showroom.markerloop.com/vteatre/>). The original system is larger (catalogue, fan zones, offline sales, wallet and cashback, organiser tools). This repository rebuilds only the part where tickets can be double-sold or double-used, with a Django backend and a Vue 3 seat map.
 
-**Live demo:** <https://showroom.markerloop.com/ticketing-seat-hold/>. The demo is the frontend running on its own with a mocked API (see [Frontend](#frontend)). Add `?hold_ttl=30` to the URL to watch a hold expire in 30 seconds.
+**Live demo:** <https://showroom.markerloop.com/ticketing-seat-hold/>. The demo is the frontend running on its own with a mocked API (see [Frontend](#frontend)). Around the core flow it carries a few pieces of the original product: a season listing with categories and sorting, two venues with different hall plans, a "My tickets" wallet and per-show cashback in bonus points. Add `?hold_ttl=30` to the URL to watch a hold expire in 30 seconds.
 
 ## Flow
 
@@ -64,7 +64,9 @@ backend/    Django 5 + DRF + Celery
   ticketing/api/        thin DRF views; domain errors map to {code, detail} JSON
   tests/                pytest, including the concurrency tests
 frontend/   Vue 3 + TypeScript + Vite
-  src/components/       VenuePlan (SVG sections), SeatMap, HoldCountdown, TicketCard, GatePanel
+  src/views/            Home (season listing), Event (seat map → hold → pay → gate), Wallet (My tickets)
+  src/components/       VenuePlan (SVG sections), SeatMap, HoldCountdown, TicketCard, GatePanel, Poster
+  src/content/          editorial copy a CMS would own: productions, posters, venues
   src/api/              typed client: HTTP or in-browser mock behind one interface
 ```
 
